@@ -1,12 +1,11 @@
 const CARTOLA = "https://api.cartola.globo.com";
 
 function normalizeIds(value) {
-  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  const text = Array.isArray(value)
+    ? value.join(" ")
+    : String(value || "");
 
-  return String(value || "")
-    .split(/[\s;,]+/)
-    .map(s => s.trim())
-    .filter(Boolean);
+  return text.match(/\d+/g) || [];
 }
 
 function extractTeam(data, requestedId) {
