@@ -35,8 +35,8 @@ function extractTeam(data, requestedId) {
     players
   };
 }
-
-async function fetchTeam(id) {
+ 
+async function fetchCartola(url) {
   const controller = new AbortController();
 
   const timeout = setTimeout(
@@ -45,43 +45,47 @@ async function fetchTeam(id) {
   );
 
   try {
-    const response = await fetch(
-      `${CARTOLA}/time/id/${encodeURIComponent(id)}`,
-      {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 CartolaComparator/1.0",
-          "Accept":
-            "application/json,text/plain,*/*",
-          "Origin":
-            "https://cartola.globo.com",
-          "Referer":
-            "https://cartola.globo.com/"
-        },
-        signal: controller.signal,
-        cache: "no-store"
-      }
-    );
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 CartolaComparator/1.0",
+        "Accept": "application/json,text/plain,*/*"
+      },
+      signal: controller.signal,
+      cache: "no-store"
+    });
 
     if (!response.ok) {
-      const text =
-        await response.text().catch(() => "");
-
-      throw new Error(
-        `Cartola HTTP ${response.status}` +
-        (text ? `: ${text.slice(0, 120)}` : "")
-      );
+      throw new Error(`Cartola HTTP ${response.status}`);
     }
 
-    const data = await response.json();
-
-    return extractTeam(data, id);
+    return await response.json();
 
   } finally {
     clearTimeout(timeout);
   }
 }
 
+async function fetchTeam(id) {
+  let data = await fetchCartola(
+    `${CARTOLA}/time/id/${encodeURIComponent(id)}`
+  );
+
+  if (data?.capitao_id == null && data?.rodada_atual) {
+    try {
+      const rodadaData = await fetchCartola(
+        `${CARTOLA}/time/id/${encodeURIComponent(id)}/${data.rodada_atual}`
+      );
+
+      if (rodadaData?.capitao_id != null) {
+        data = rodadaData;
+      }
+    } catch (error) {
+      // mantém a resposta original
+    }
+  }
+
+  return extractTeam(data, id);
+}
 function aggregate(teams) {
   const map = new Map();
 
