@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jumentus x Soberanos</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f5f6f8;color:#172033}
+.wrap{max-width:1100px;margin:auto;padding:18px}
+h1{font-size:24px;margin-bottom:4px}.sub{color:#667085;margin-bottom:16px}
+.card{background:white;padding:16px;border-radius:16px;margin:12px 0;box-shadow:0 2px 10px #0000000c}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+textarea{width:100%;box-sizing:border-box;min-height:95px;border:1px solid #d0d5dd;border-radius:10px;padding:10px;font-size:14px}
+button{background:#f25b37;color:white;border:0;border-radius:10px;padding:12px 16px;font-weight:800}
+button:disabled{opacity:.6}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:9px 7px;border-bottom:1px solid #eee;text-align:left}
+.num{text-align:center}.a{color:#08783e;font-weight:800}.b{color:#b42318;font-weight:800}.tie{color:#667085}
+.status{white-space:pre-wrap;background:#101828;color:#d0d5dd;border-radius:10px;padding:12px;font:12px ui-monospace,monospace;max-height:220px;overflow:auto}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.wrap{padding:10px}table{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Comparador Jumentus × Soberanos</h1>
+<div class="sub">Escalações + capitães, consultados pelo servidor.</div>
+
+<div class="card">
+<div class="grid">
+<div><b>JUMENTUS TITULAR BR</b><textarea id="a">9872837;15780241;11307822;50221933;3917293;2382418;8894542;13912319;50854658</textarea></div>
+<div><b>Soberanos FC - Titulares BR</b><textarea id="b">25459803;50207229;49122534;8111611;338959;25583724;15083923;27609846;51006971</textarea></div>
+</div>
+<p><button id="go" onclick="compare()">Comparar agora</button></p>
+</div>
+
+<div class="card"><b>Status</b><div class="status" id="status">Pronto.</div></div>
+
+<div class="card" style="overflow:auto">
+<table>
+<thead><tr><th>Jogador</th><th class="num">Jumentus</th><th class="num">Cap. J</th><th class="num">Soberanos</th><th class="num">Cap. S</th><th>Vantagem</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+async function compare(){
+  const btn=document.getElementById('go'), st=document.getElementById('status'), body=document.getElementById('rows');
+  btn.disabled=true; body.innerHTML=''; st.textContent='Consultando as 18 escalações no servidor...';
+  try{
+    const r=await fetch('/api/compare',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({jumentus:document.getElementById('a').value,soberanos:document.getElementById('b').value})
+    });
+    const data=await r.json();
+    if(!r.ok || !data.ok) throw new Error(data.error || 'Falha na consulta');
+
+    st.textContent=`Jumentus: ${data.resumo.jumentusCarregados}/${data.resumo.jumentusTotal} times\nSoberanos: ${data.resumo.soberanosCarregados}/${data.resumo.soberanosTotal} times`;
+    if(data.falhas.jumentus.length || data.falhas.soberanos.length){
+      st.textContent += '\n\nFalhas:\n' + JSON.stringify(data.falhas,null,2);
+    }
+
+    for(const x of data.jogadores){
+      const cls=x.diferenca>0?'a':x.diferenca<0?'b':'tie';
+      body.insertAdjacentHTML('beforeend',`<tr>
+        <td>${esc(x.jogador)}</td>
+        <td class="num">${x.jumentus}/9</td><td class="num">${x.capJumentus}</td>
+        <td class="num">${x.soberanos}/9</td><td class="num">${x.capSoberanos}</td>
+        <td class="${cls}">${esc(x.vantagem)}</td>
+      </tr>`);
+    }
+  }catch(e){st.textContent='Erro: '+e.message}
+  finally{btn.disabled=false}
+}
+</script>
+</body></html>
