@@ -21,13 +21,23 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:9px 7px;b
 </head>
 <body>
 <div class="wrap">
-<h1>Comparador Jumentus × Soberanos</h1>
+<h1 id="titulo">Comparador de Times</h1>
 <div class="sub">Escalações + capitães, consultados pelo servidor.</div>
 
 <div class="card">
 <div class="grid">
-<div><b>JUMENTUS TITULAR BR</b><textarea id="a">9872837;15780241;11307822;50221933;3917293;2382418;8894542;13912319;50854658</textarea></div>
-<div><b>Soberanos FC - Titulares BR</b><textarea id="b">25459803;50207229;49122534;8111611;338959;25583724;15083923;27609846;51006971</textarea></div>
+<div>
+<b>TIME A</b>
+<input id="nameA" value="Jumentus" placeholder="Nome do Time A">
+<textarea id="a" placeholder="Cole aqui as IDs do Time A"></textarea>
+</div>
+
+<div>
+<b>TIME B</b>
+<input id="nameB" value="Imbatíveis" placeholder="Nome do Time B">
+<textarea id="b" placeholder="Cole aqui as IDs do Time B"></textarea>
+</div>
+</div>
 </div>
 <p><button id="go" onclick="compare()">Comparar agora</button></p>
 </div>
@@ -36,7 +46,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:9px 7px;b
 
 <div class="card" style="overflow:auto">
 <table>
-<thead><tr><th>Jogador</th><th class="num">Jumentus</th><th class="num">Cap. J</th><th class="num">Soberanos</th><th class="num">Cap. S</th><th>Vantagem</th></tr></thead>
+<thead><tr><th>Jogador</th><th class="num" id="thA">Time A</th><th class="num">Cap. A</th><th class="num" id="thB">Time B</th><th class="num">Cap. B</th><th>Vantagem</th></tr></thead>
 <tbody id="rows"></tbody>
 </table>
 </div>
@@ -44,34 +54,92 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:9px 7px;b
 
 <script>
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-async function compare(){
-  const btn=document.getElementById('go'), st=document.getElementById('status'), body=document.getElementById('rows');
-  btn.disabled=true; body.innerHTML=''; st.textContent='Consultando as 18 escalações no servidor...';
-  try{
-    const r=await fetch('/api/compare',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({jumentus:document.getElementById('a').value,soberanos:document.getElementById('b').value})
+async function compare() {
+  const btn = document.getElementById('go');
+  const st = document.getElementById('status');
+  const body = document.getElementById('rows');
+
+  const nameA = document.getElementById('nameA').value.trim() || 'Time A';
+  const nameB = document.getElementById('nameB').value.trim() || 'Time B';
+
+  document.getElementById('titulo').textContent =
+    `Comparador ${nameA} × ${nameB}`;
+
+  document.getElementById('thA').textContent = nameA;
+  document.getElementById('thB').textContent = nameB;
+
+  btn.disabled = true;
+  body.innerHTML = '';
+  st.textContent = 'Consultando escalações...';
+
+  try {
+    const r = await fetch('/api/compare', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jumentus: document.getElementById('a').value,
+        soberanos: document.getElementById('b').value
+      })
     });
-    const data=await r.json();
-    if(!r.ok || !data.ok) throw new Error(data.error || 'Falha na consulta');
 
-    st.textContent=`Jumentus: ${data.resumo.jumentusCarregados}/${data.resumo.jumentusTotal} times\nSoberanos: ${data.resumo.soberanosCarregados}/${data.resumo.soberanosTotal} times`;
-    if(data.falhas.jumentus.length || data.falhas.soberanos.length){
-      st.textContent += '\n\nFalhas:\n' + JSON.stringify(data.falhas,null,2);
+    const data = await r.json();
+
+    if (!r.ok || !data.ok) {
+      throw new Error(data.error || 'Erro na comparação');
     }
 
-    for(const x of data.jogadores){
-      const cls=x.diferenca>0?'a':x.diferenca<0?'b':'tie';
-      body.insertAdjacentHTML('beforeend',`<tr>
-        <td>${esc(x.jogador)}</td>
-        <td class="num">${x.jumentus}/9</td><td class="num">${x.capJumentus}</td>
-        <td class="num">${x.soberanos}/9</td><td class="num">${x.capSoberanos}</td>
-        <td class="${cls}">${esc(x.vantagem)}</td>
-      </tr>`);
+    const totalA = data.resumo.jumentusTotal;
+    const carregadosA = data.resumo.jumentusCarregados;
+    const totalB = data.resumo.soberanosTotal;
+    const carregadosB = data.resumo.soberanosCarregados;
+
+    st.textContent =
+      `${nameA}: ${carregadosA}/${totalA} times\n` +
+      `${nameB}: ${carregadosB}/${totalB} times`;
+
+    if (
+      data.falhas.jumentus.length ||
+      data.falhas.soberanos.length
+    ) {
+      st.textContent +=
+        '\n\nFalhas:\n' +
+        JSON.stringify(data.falhas, null, 2);
     }
-  }catch(e){st.textContent='Erro: '+e.message}
-  finally{btn.disabled=false}
+
+    for (const x of data.jogadores) {
+      const cls =
+        x.diferenca > 0
+          ? 'a'
+          : x.diferenca < 0
+          ? 'b'
+          : '';
+
+      let vantagem = 'Empate';
+
+      if (x.diferenca > 0) {
+        vantagem = `${nameA} +${x.diferenca}`;
+      } else if (x.diferenca < 0) {
+        vantagem = `${nameB} +${Math.abs(x.diferenca)}`;
+      }
+
+      body.insertAdjacentHTML(
+        'beforeend',
+        `<tr>
+          <td>${esc(x.jogador)}</td>
+          <td class="num">${x.jumentus}/${totalA}</td>
+          <td class="num">${x.capJumentus}</td>
+          <td class="num">${x.soberanos}/${totalB}</td>
+          <td class="num">${x.capSoberanos}</td>
+          <td class="${cls}">${esc(vantagem)}</td>
+        </tr>`
+      );
+    }
+
+  } catch (e) {
+    st.textContent = 'Erro: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
 }
-</script>
-</body></html>
