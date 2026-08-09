@@ -1,66 +1,256 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Jumentus x Soberanos</title>
-<style>
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f5f6f8;color:#172033}
-.wrap{max-width:1100px;margin:auto;padding:18px}
-h1{font-size:24px;margin-bottom:4px}.sub{color:#667085;margin-bottom:16px}
-.card{background:white;padding:16px;border-radius:16px;margin:12px 0;box-shadow:0 2px 10px #0000000c}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-textarea{width:100%;box-sizing:border-box;min-height:95px;border:1px solid #d0d5dd;border-radius:10px;padding:10px;font-size:14px}
-button{background:#f25b37;color:white;border:0;border-radius:10px;padding:12px 16px;font-weight:800}
-button:disabled{opacity:.6}
-table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:9px 7px;border-bottom:1px solid #eee;text-align:left}
-.num{text-align:center}.a{color:#08783e;font-weight:800}.b{color:#b42318;font-weight:800}.tie{color:#667085}
-.status{white-space:pre-wrap;background:#101828;color:#d0d5dd;border-radius:10px;padding:12px;font:12px ui-monospace,monospace;max-height:220px;overflow:auto}
-@media(max-width:700px){.grid{grid-template-columns:1fr}.wrap{padding:10px}table{font-size:12px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Comparador Cartola</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0;
+      background: #f4f5f7;
+      color: #172033;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0 0 4px;
+    }
+
+    .sub {
+      color: #667085;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font: inherit;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    input {
+      margin: 6px 0 8px;
+    }
+
+    textarea {
+      min-height: 145px;
+      resize: vertical;
+    }
+
+    button {
+      background: #f25b37;
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    button:disabled {
+      opacity: .6;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #eaecf0;
+    }
+
+    th {
+      text-align: left;
+    }
+
+    .num {
+      text-align: center;
+    }
+
+    .a {
+      color: #08783e;
+      font-weight: 800;
+    }
+
+    .b {
+      color: #b42318;
+      font-weight: 800;
+    }
+
+    .status {
+      white-space: pre-wrap;
+      background: #101828;
+      color: white;
+      padding: 14px;
+      border-radius: 12px;
+      font-family: ui-monospace, monospace;
+    }
+
+    @media(max-width:700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wrap {
+        padding: 15px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
 <div class="wrap">
-<h1 id="titulo">Comparador de Times</h1>
-<div class="sub">Escalações + capitães, consultados pelo servidor.</div>
 
-<div class="card">
-<div class="grid">
-<div>
-<b>TIME A</b>
-<input id="nameA" value="Jumentus" placeholder="Nome do Time A">
-<textarea id="a" placeholder="Cole aqui as IDs do Time A"></textarea>
+  <h1 id="titulo">Comparador de Times</h1>
+  <div class="sub">
+    Escalações + capitães, consultados pelo servidor.
+  </div>
+
+  <div class="card">
+
+    <div class="grid">
+
+      <div>
+        <b>TIME A</b>
+
+        <input
+          id="nameA"
+          value="Jumentus"
+          placeholder="Nome do Time A"
+        >
+
+        <textarea
+          id="a"
+          placeholder="Cole aqui as IDs do Time A"
+        ></textarea>
+      </div>
+
+
+      <div>
+        <b>TIME B</b>
+
+        <input
+          id="nameB"
+          value="Imbatíveis"
+          placeholder="Nome do Time B"
+        >
+
+        <textarea
+          id="b"
+          placeholder="Cole aqui as IDs do Time B"
+        ></textarea>
+      </div>
+
+    </div>
+
+    <p>
+      <button id="go" onclick="compare()">
+        Comparar agora
+      </button>
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <b>Status</b>
+
+    <div
+      class="status"
+      id="status"
+    >Pronto.</div>
+
+  </div>
+
+
+  <div
+    class="card"
+    style="overflow:auto"
+  >
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Jogador</th>
+          <th class="num" id="thA">Time A</th>
+          <th class="num">Cap. A</th>
+          <th class="num" id="thB">Time B</th>
+          <th class="num">Cap. B</th>
+          <th>Vantagem</th>
+        </tr>
+      </thead>
+
+      <tbody id="rows"></tbody>
+
+    </table>
+
+  </div>
+
 </div>
 
-<div>
-<b>TIME B</b>
-<input id="nameB" value="Imbatíveis" placeholder="Nome do Time B">
-<textarea id="b" placeholder="Cole aqui as IDs do Time B"></textarea>
-</div>
-</div>
-</div>
-<p><button id="go" onclick="compare()">Comparar agora</button></p>
-</div>
-
-<div class="card"><b>Status</b><div class="status" id="status">Pronto.</div></div>
-
-<div class="card" style="overflow:auto">
-<table>
-<thead><tr><th>Jogador</th><th class="num" id="thA">Time A</th><th class="num">Cap. A</th><th class="num" id="thB">Time B</th><th class="num">Cap. B</th><th>Vantagem</th></tr></thead>
-<tbody id="rows"></tbody>
-</table>
-</div>
-</div>
 
 <script>
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+
+function esc(s) {
+  return String(s).replace(
+    /[&<>"']/g,
+    c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[c])
+  );
+}
+
+
 async function compare() {
+
   const btn = document.getElementById('go');
   const st = document.getElementById('status');
   const body = document.getElementById('rows');
 
-  const nameA = document.getElementById('nameA').value.trim() || 'Time A';
-  const nameB = document.getElementById('nameB').value.trim() || 'Time B';
+  const nameA =
+    document.getElementById('nameA').value.trim() ||
+    'Time A';
+
+  const nameB =
+    document.getElementById('nameB').value.trim() ||
+    'Time B';
+
 
   document.getElementById('titulo').textContent =
     `Comparador ${nameA} × ${nameB}`;
@@ -68,47 +258,84 @@ async function compare() {
   document.getElementById('thA').textContent = nameA;
   document.getElementById('thB').textContent = nameB;
 
+
   btn.disabled = true;
   body.innerHTML = '';
   st.textContent = 'Consultando escalações...';
 
+
   try {
+
     const r = await fetch('/api/compare', {
+
       method: 'POST',
+
       headers: {
         'Content-Type': 'application/json'
       },
+
       body: JSON.stringify({
-        jumentus: document.getElementById('a').value,
-        soberanos: document.getElementById('b').value
+
+        jumentus:
+          document.getElementById('a').value,
+
+        soberanos:
+          document.getElementById('b').value
+
       })
+
     });
+
 
     const data = await r.json();
 
+
     if (!r.ok || !data.ok) {
-      throw new Error(data.error || 'Erro na comparação');
+
+      throw new Error(
+        data.error ||
+        'Erro na comparação'
+      );
+
     }
 
-    const totalA = data.resumo.jumentusTotal;
-    const carregadosA = data.resumo.jumentusCarregados;
-    const totalB = data.resumo.soberanosTotal;
-    const carregadosB = data.resumo.soberanosCarregados;
+
+    const totalA =
+      data.resumo.jumentusTotal;
+
+    const carregadosA =
+      data.resumo.jumentusCarregados;
+
+    const totalB =
+      data.resumo.soberanosTotal;
+
+    const carregadosB =
+      data.resumo.soberanosCarregados;
+
 
     st.textContent =
       `${nameA}: ${carregadosA}/${totalA} times\n` +
       `${nameB}: ${carregadosB}/${totalB} times`;
 
+
     if (
       data.falhas.jumentus.length ||
       data.falhas.soberanos.length
     ) {
+
       st.textContent +=
         '\n\nFalhas:\n' +
-        JSON.stringify(data.falhas, null, 2);
+        JSON.stringify(
+          data.falhas,
+          null,
+          2
+        );
+
     }
 
+
     for (const x of data.jogadores) {
+
       const cls =
         x.diferenca > 0
           ? 'a'
@@ -116,30 +343,76 @@ async function compare() {
           ? 'b'
           : '';
 
+
       let vantagem = 'Empate';
 
+
       if (x.diferenca > 0) {
-        vantagem = `${nameA} +${x.diferenca}`;
-      } else if (x.diferenca < 0) {
-        vantagem = `${nameB} +${Math.abs(x.diferenca)}`;
+
+        vantagem =
+          `${nameA} +${x.diferenca}`;
+
       }
 
+      else if (x.diferenca < 0) {
+
+        vantagem =
+          `${nameB} +${Math.abs(x.diferenca)}`;
+
+      }
+
+
       body.insertAdjacentHTML(
+
         'beforeend',
+
         `<tr>
+
           <td>${esc(x.jogador)}</td>
-          <td class="num">${x.jumentus}/${totalA}</td>
-          <td class="num">${x.capJumentus}</td>
-          <td class="num">${x.soberanos}/${totalB}</td>
-          <td class="num">${x.capSoberanos}</td>
-          <td class="${cls}">${esc(vantagem)}</td>
+
+          <td class="num">
+            ${x.jumentus}/${totalA}
+          </td>
+
+          <td class="num">
+            ${x.capJumentus}
+          </td>
+
+          <td class="num">
+            ${x.soberanos}/${totalB}
+          </td>
+
+          <td class="num">
+            ${x.capSoberanos}
+          </td>
+
+          <td class="${cls}">
+            ${esc(vantagem)}
+          </td>
+
         </tr>`
+
       );
+
     }
 
+
   } catch (e) {
-    st.textContent = 'Erro: ' + e.message;
-  } finally {
-    btn.disabled = false;
+
+    st.textContent =
+      'Erro: ' + e.message;
+
   }
+
+  finally {
+
+    btn.disabled = false;
+
+  }
+
 }
+
+</script>
+
+</body>
+</html>
